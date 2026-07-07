@@ -284,7 +284,7 @@ Before running the project, ensure the following software is installed:
 # 📥 Clone Repository
 
 ```bash
-git clone https://github.com/<your-username>/Music-Streaming-Service-Analytics.git
+https://github.com/MohammedLuqman/Music-Streaming-Service-Analytics.git
 ```
 
 
