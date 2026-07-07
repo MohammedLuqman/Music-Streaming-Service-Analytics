@@ -1,0 +1,106 @@
+version: '3.8'
+
+networks:
+  data-network:
+    driver: bridge
+
+services:
+  # Kafka & KRaft Broker
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    networks: [data-network]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CLUSTER_ID: 'MkU3OEVBNT-WI2NUE4091'
+    ports: ["9092:9092"]
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    networks: [data-network]
+    ports: ["8090:8080"]
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on: [kafka]
+
+  # Jupyter
+  pyspark-notebook:
+    image: jupyter/pyspark-notebook:spark-3.5.0
+    container_name: pyspark-notebook
+    ports: ["8888:8888"]
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./dags/scripts:/home/jovyan/work/scripts 
+      - ./jars:/home/jovyan/jars
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - SPARK_EXTRA_CLASSPATH=/home/jovyan/jars/*
+    networks: [data-network]
+
+# Airflow
+  airflow:
+    image: apache/airflow:2.9.1
+    container_name: airflow
+    restart: always
+    networks: [data-network]
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - _AIRFLOW_DB_UPGRADE=true
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+      - _AIRFLOW_WWW_USER_EMAIL=admin@admin.com
+      - _PIP_ADDITIONAL_REQUIREMENTS=boto3 pandas
+    depends_on: [minio]
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    ports: ["8081:8080"]
+    command: bash -c "airflow db init && airflow webserver & airflow scheduler"
+
+  # ClickHouse
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    networks: [data-network]
+    ports: ["8123:8123"]
+    environment:
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=admin_password
+    volumes: [ch_data:/var/lib/clickhouse]
+
+  # Grafana
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    networks: [data-network]
+    ports: ["3000:3000"]
+
+  # MinIO
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    networks: [data-network]
+    ports: ["9000:9000", "9001:9001"]
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: minio_password
+    volumes: [minio_data:/data]
+    command: server /data --console-address ":9001"
+
+volumes:
+  ch_data:
+  minio_data:

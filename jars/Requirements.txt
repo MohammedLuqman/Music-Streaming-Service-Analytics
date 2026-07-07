@@ -1,0 +1,7 @@
+Please download the following JAR files:
+
+AWS SDK Bundle (aws-java-sdk-bundle-1.12.262.jar)
+ClickHouse JDBC (clickhouse-jdbc-0.6.0.jar)
+Delta Spark (delta-spark_2.12-3.1.0.jar)
+Delta Storage (delta-storage-3.1.0.jar)
+Hadoop AWS (hadoop-aws-3.3.4.jar)
