@@ -80,7 +80,7 @@ The architecture separates ingestion, processing, storage, orchestration, and an
 # 🏗 Architecture
 
 ```text
-          Users CSV ----------------------\
+Users CSV ----------------------\
                                  \
                                   --> MinIO Bronze
                                  /
