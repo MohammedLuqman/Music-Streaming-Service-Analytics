@@ -135,7 +135,7 @@ default_args = {
 with DAG(
     dag_id='lastfm_to_minio',
     default_args=default_args,
-    schedule_interval='@once',  
+    schedule_interval='@daily',  
     catchup=False,
     tags=['lakehouse', 'minio', 'bronze_layer']
 ) as dag:
