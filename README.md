@@ -80,57 +80,51 @@ The architecture separates ingestion, processing, storage, orchestration, and an
 # 🏗 Architecture
 
 ```text
-                Users Dataset (CSV)
-                        │
-                        ▼
-                  MinIO Bronze
-                        │
-                        ▼
-               Spark Batch Processing
-                        │
-                        ▼
-                  Silver Users
-                        
-                        
-                Songs Dataset (JSON)
-                        │
-                        ▼
-                  MinIO Bronze
-                        │
-                        ▼
-               Spark Batch Processing
-                        │
-                        ▼
-                  Silver Songs
+          Users CSV ----------------------\
+                                 \
+                                  --> MinIO Bronze
+                                 /
+Songs JSON ---------------------/
+
+            │
+            ▼
+     Spark Batch ETL
+            │
+            ▼
+    Silver Dimensions
+ (dim_users, dim_songs)
 
 
-         Simulated Music Streaming Events
+Streaming Events Generator
+            │
+            ▼
+        Kafka
+            │
+            ▼
+Spark Structured Streaming
+            │
+            ▼
+     Bronze Events
+            │
+            ▼
+ Stream-Static Join
+            │
+            ▼
+ Silver Enriched Events
+            │
+            ▼
+     ClickHouse Gold
+            │
+     ┌──────┴──────────┐
+     ▼                 ▼
+Grafana        AI Recommendation Engine
                         │
                         ▼
-                   Apache Kafka
+          Recommendation Table
+            (ClickHouse)
                         │
                         ▼
-            Spark Structured Streaming
-                        │
-                        ▼
-                Bronze Events Layer
-                        │
-                        ▼
-         Stream-Static Join Enrichment
-          (Events + Users + Songs)
-                        │
-                        ▼
-             Silver Enriched Events
-                        │
-                        ▼
-                 ClickHouse Gold
-                        │
-                        ▼
-                     Grafana
-
-
-                Apache Airflow
-          (Pipeline Orchestration)
+                   Grafana
 ```
 
 
@@ -501,8 +495,7 @@ Grafana connects directly to ClickHouse, enabling low-latency visualization of a
 
 # 🤖 Recommendation Pipeline
 
-The project includes an AI recommendation workflow designed to generate personalized music recommendations.
-
+The recommendation engine periodically reads historical listening data from ClickHouse Gold tables, generates personalized recommendations using machine learning models, and stores the results in dedicated recommendation tables for downstream consumption and visualization.
 ---
 
 # 📊 Data Quality
