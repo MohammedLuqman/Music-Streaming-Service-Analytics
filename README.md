@@ -79,39 +79,60 @@ The architecture separates ingestion, processing, storage, orchestration, and an
 
 # 🏗 Architecture
 
-```
-                 Music Streaming Events
-                           │
-                           ▼
-                 Apache Kafka (Streaming)
-                           │
-                           ▼
-                Spark Structured Streaming
-                           │
-                           ▼
-               Bronze Layer (Raw JSON, CSV)
-                           │
-                           ▼
-                  Spark Batch Cleaning
-                           │
-                           ▼
-             Silver Layer (Clean Parquet)
-                           │
-                           ▼
-                Spark Aggregation Jobs
-                           │
-                           ▼
-             Gold Layer (Business Metrics)
-                    │                 │
-                    ▼                 ▼
-              ClickHouse         Grafana
-                    │
-                    ▼
-              Business Analytics
+```text
+                Users Dataset (CSV)
+                        │
+                        ▼
+                  MinIO Bronze
+                        │
+                        ▼
+               Spark Batch Processing
+                        │
+                        ▼
+                  Silver Users
+                        
+                        
+                Songs Dataset (JSON)
+                        │
+                        ▼
+                  MinIO Bronze
+                        │
+                        ▼
+               Spark Batch Processing
+                        │
+                        ▼
+                  Silver Songs
 
-              Apache Airflow
-        (Pipeline Orchestration)
+
+         Simulated Music Streaming Events
+                        │
+                        ▼
+                   Apache Kafka
+                        │
+                        ▼
+            Spark Structured Streaming
+                        │
+                        ▼
+                Bronze Events Layer
+                        │
+                        ▼
+         Stream-Static Join Enrichment
+          (Events + Users + Songs)
+                        │
+                        ▼
+             Silver Enriched Events
+                        │
+                        ▼
+                 ClickHouse Gold
+                        │
+                        ▼
+                     Grafana
+
+
+                Apache Airflow
+          (Pipeline Orchestration)
 ```
+
 
 ---
 
@@ -153,79 +174,79 @@ The architecture separates ingestion, processing, storage, orchestration, and an
 
 # ⚙ End-to-End Data Flow
 
-The pipeline processes streaming events through multiple stages.
+## Step 1 — Load Dimension Data
 
-## Step 1 — Event Generation
+Users and songs datasets are ingested into the Bronze layer in MinIO.
 
-Music listening events are continuously generated from the simulated music streaming application.
-
-Each event contains information such as:
-
-- User ID
-- Song ID
-- Artist
-- Genre
-- Listening duration
-- Timestamp
-- Device
-- Country
+These datasets represent slowly changing dimensions and are processed using Spark batch jobs.
 
 ↓
 
-## Step 2 — Kafka Streaming
+## Step 2 — Batch Processing
 
-Events are published into Kafka topics where they become available for downstream consumers.
+Spark reads Bronze datasets and creates trusted Silver dimension tables:
 
-↓
-
-## Step 3 — Spark Structured Streaming
-
-Spark continuously consumes Kafka topics and performs:
-
-- Schema validation
-- Timestamp conversion
-- Data enrichment
-- Invalid record filtering
+* dim_users
+* dim_songs
 
 ↓
 
-## Step 4 — Bronze Layer
+## Step 3 — Event Generation
 
-Raw events are stored inside MinIO as immutable Parquet files.
+A simulated music application continuously generates listening events such as:
 
-↓
-
-## Step 5 — Silver Layer
-
-Spark cleans, standardizes, and enriches the data before writing optimized Parquet datasets.
-
-↓
-
-## Step 6 — Gold Layer
-
-Business aggregations are generated including:
-
-- Top Songs
-- Top Artists
-- Listening Time
-- Genre Statistics
-- User Engagement Metrics
+* play
+* pause
+* skip
+* like
+* complete listen
 
 ↓
 
-## Step 7 — ClickHouse
+## Step 4 — Kafka Streaming
 
-Aggregated datasets are loaded into ClickHouse for ultra-fast analytical queries.
+Streaming events are published to Kafka topics for real-time processing.
 
 ↓
 
-## Step 8 — Grafana
+## Step 5 — Spark Structured Streaming
 
-Grafana connects directly to ClickHouse to visualize business KPIs and trends in real time.
+Spark consumes Kafka topics and performs:
 
----
+* Schema validation
+* Timestamp normalization
+* Invalid record filtering
+* Data quality checks
 
----
+↓
+
+## Step 6 — Bronze Events Layer
+
+Validated streaming events are stored in MinIO Bronze storage.
+
+↓
+
+## Step 7 — Stream-Static Join
+
+Streaming events are enriched using Silver dimensions:
+
+* dim_users
+* dim_songs
+
+This architecture combines batch and real-time processing in a single Lakehouse platform.
+
+↓
+
+## Step 8 — Gold Layer
+
+Business metrics and aggregations are generated and loaded into ClickHouse.
+
+↓
+
+## Step 9 — Grafana Dashboards
+
+Grafana visualizes KPIs and business insights in real time.
+
 
 # 📂 Project Structure
 
