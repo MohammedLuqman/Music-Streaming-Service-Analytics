@@ -510,16 +510,6 @@ These checks ensure downstream analytical datasets remain reliable and consisten
 
 ---
 
-## Grafana cannot connect to ClickHouse
-
-Verify that:
-
-- ClickHouse container is healthy.
-- Network connectivity exists between containers.
-- Grafana datasource configuration is correct.
-
----
-
 # 📄 License
 
 This project is intended for educational and portfolio purposes.
