@@ -190,10 +190,8 @@ Spark reads Bronze datasets and creates trusted Silver dimension tables:
 A simulated music application continuously generates listening events such as:
 
 * play
-* pause
 * skip
 * like
-* complete listen
 
 ↓
 
@@ -247,7 +245,7 @@ Grafana visualizes KPIs and business insights in real time.
 ```text
 music-analytics-data-lakehouse/
 │
-├── dags/                         # Apache Airflow DAGs
+├── dags/                         
 │   ├── kafka_stream_ingestion.py
 │   ├── lastfm_to_minio.py
 │   ├── music_recommendations_ai.py
@@ -340,7 +338,6 @@ Each DAG is responsible for a specific stage of the platform.
 
 Example responsibilities include:
 
-- Starting Kafka ingestion
 - Loading external music datasets
 - Running scheduled ETL jobs
 - Triggering recommendation workflows
@@ -360,16 +357,14 @@ The producer simulates real-time music activity by publishing events into Kafka 
 
 Each event may include:
 
-- User ID
-- Song ID
-- Artist
-- Album
-- Genre
-- Device
-- Country
-- Timestamp
-- Listening Duration
-
+- event_id
+- user_id
+- song_id
+- event_type
+- duration
+- event_timestamp
+- processed_at
+  
 ---
 
 ## Kafka
@@ -413,7 +408,7 @@ Characteristics:
 - Raw events
 - Append-only
 - Historical archive
-- Parquet format
+- JSON , CSV format
 - Stored inside MinIO
 
 No business transformations are applied at this stage.
