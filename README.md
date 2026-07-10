@@ -491,7 +491,7 @@ Grafana connects directly to ClickHouse, enabling low-latency visualization of a
 # 🤖 Recommendation Pipeline
 
 The recommendation engine periodically reads historical listening data from ClickHouse Gold tables, generates personalized recommendations using machine learning models, and stores the results in dedicated recommendation tables for downstream consumption and visualization.
----
+
 
 # 📊 Data Quality
 
