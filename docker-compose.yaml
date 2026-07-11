@@ -88,6 +88,10 @@ services:
     image: grafana/grafana:latest
     networks: [data-network]
     ports: ["3000:3000"]
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource  
+    volumes:
+      - grafana_data:/var/lib/grafana
 
   # MinIO
   minio:
@@ -104,3 +108,4 @@ services:
 volumes:
   ch_data:
   minio_data:
+  grafana_data:  
