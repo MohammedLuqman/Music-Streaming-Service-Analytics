@@ -8,6 +8,7 @@ import boto3
 from botocore.client import Config
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 import logging
 
 logger = logging.getLogger("airflow.task")
@@ -154,5 +155,12 @@ with DAG(
         task_id='generate_and_upload_users_to_minio',
         python_callable=generate_and_upload_users_to_minio
     )
+    trigger_silver = TriggerDagRunOperator(
+        task_id='trigger_silver_pipeline',
+        trigger_dag_id='silver_layer_pipeline', 
+        wait_for_completion=True,
+        poke_interval=30
+    )
 
-    task_init_lake >> [task_songs_to_minio, task_users_to_minio]
+    task_init_lake >> [task_songs_to_minio, task_users_to_minio] >> trigger_silver
+
