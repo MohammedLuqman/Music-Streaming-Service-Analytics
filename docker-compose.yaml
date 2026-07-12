@@ -72,6 +72,7 @@ services:
       - _AIRFLOW_WWW_USER_PASSWORD=admin
       - _AIRFLOW_WWW_USER_EMAIL=admin@admin.com
       - _PIP_ADDITIONAL_REQUIREMENTS=boto3 pandas
+      - _PIP_ADDITIONAL_REQUIREMENTS=boto3 pandas apache-airflow-providers-apache-spark
     depends_on: 
       - postgres
       - minio
@@ -79,6 +80,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
+      - ./jars:/opt/airflow/jars             
     ports: ["8081:8080"]
     command: bash -c "airflow db migrate && airflow webserver & airflow scheduler"
 
