@@ -56,7 +56,7 @@ services:
       - POSTGRES_DB=airflow
     networks: [data-network]
 
-  # إضافة تعديلات Airflow
+  # Airflow
   airflow:
     image: apache/airflow:2.9.1
     container_name: airflow
@@ -72,7 +72,6 @@ services:
       - _AIRFLOW_WWW_USER_PASSWORD=admin
       - _AIRFLOW_WWW_USER_EMAIL=admin@admin.com
       - _PIP_ADDITIONAL_REQUIREMENTS=boto3 pandas
-      - _PIP_ADDITIONAL_REQUIREMENTS=boto3 pandas apache-airflow-providers-apache-spark
     depends_on: 
       - postgres
       - minio
