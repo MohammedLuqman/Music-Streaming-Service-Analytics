@@ -4,15 +4,15 @@ from delta.tables import DeltaTable
 
 spark = SparkSession.builder \
     .appName("Production_Grade_Pipeline") \
-    .config("spark.jars", "/home/jovyan/jars/*") \
+    .config("spark.jars", "/opt/airflow/jars/delta-core_2.12-3.0.0.jar,/opt/airflow/jars/hadoop-aws-3.3.4.jar") \
     .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
     .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
     .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000") \
     .config("spark.hadoop.fs.s3a.access.key", "admin") \
     .config("spark.hadoop.fs.s3a.secret.key", "minio_password") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .getOrCreate()
-
 
 def upsert_to_delta(df, target_path, merge_condition):
     if DeltaTable.isDeltaTable(spark, target_path):
@@ -24,7 +24,7 @@ def upsert_to_delta(df, target_path, merge_condition):
          .whenNotMatchedInsertAll() \
          .execute()
     else:
-        df.write.format("delta").save(target_path)
+        df.write.format("delta").mode("overwrite").save(target_path)
 
 songs = spark.read.option("multiLine", "true").json("s3a://landing-zone/bronze/songs/")
 songs_new = songs.select(
