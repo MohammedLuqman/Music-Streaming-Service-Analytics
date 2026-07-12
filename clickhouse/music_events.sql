@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS default.realtime_music_events (
     song_name String,
     artist_name String,
     genre String,
+    subscription_type String,
     country String,
     event_type String,    
     event_timestamp DateTime,  
